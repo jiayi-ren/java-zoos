@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +87,36 @@ public class ZooServiceImpl implements ZooService{
 
     @Transactional
     @Override
+    public Zoo update(Zoo zoo, long id) {
+
+        Zoo currentZoo = findZooById(id);
+
+        if (zoo.getZooname() != null ) {
+            currentZoo.setZooname(zoo.getZooname());
+        }
+
+        if (zoo.getTelephones().size() > 0) {
+            currentZoo.getTelephones().clear();
+            for (Telephone telephone : zoo.getTelephones()) {
+                currentZoo.getTelephones().add(new Telephone(telephone.getPhonetype(),telephone.getPhonenumber(),currentZoo));
+            }
+        }
+
+        if (zoo.getAnimals().size() > 0) {
+            for (ZooAnimals zooAnimal : currentZoo.getAnimals()) {
+                deleteZooAnimal(zooAnimal.getZoo().getZooid(), zooAnimal.getAnimal().getAnimalid());
+            }
+
+            for (ZooAnimals zooAnimal : zoo.getAnimals()) {
+                addZooAnimal(currentZoo.getZooid(), zooAnimal.getAnimal().getAnimalid());
+            }
+        }
+
+        return zooRepository.save(currentZoo);
+    }
+
+    @Transactional
+    @Override
     public void deleteZooAnimal(long zooid, long animalid) {
         zooRepository.findById(zooid).orElseThrow(()-> new EntityNotFoundException("Zoo "+zooid+" Not Found"));
         animalService.findAnimalById(animalid);
@@ -106,7 +137,7 @@ public class ZooServiceImpl implements ZooService{
         if (zooRepository.checkZooAnimalsCombo(zooid,animalid).getCount() <= 0) {
             zooRepository.insertZooAnimals(zooAuditing.getCurrentAuditor().get(), zooid, animalid);
         } else {
-            throw new EntityNotFoundException("Zoo and Animal Combination Already Exists");
+            throw new EntityExistsException("Zoo and Animal Combination Already Exists");
         }
     }
 }

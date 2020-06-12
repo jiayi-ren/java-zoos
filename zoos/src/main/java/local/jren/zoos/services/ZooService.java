@@ -10,6 +10,7 @@ public interface ZooService {
     void deleteZooById(long id);
 
     Zoo save(Zoo zoo);
+    Zoo update(Zoo zoo, long id);
     void deleteZooAnimal(long zooid, long animalid);
     void addZooAnimal(long zooid, long animalid);
 }
