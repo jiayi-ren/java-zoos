@@ -7,4 +7,5 @@ import java.util.List;
 public interface ZooService {
     List<Zoo> findAllZoos();
     Zoo findZooById(long id);
+    void deleteZooById(long id);
 }

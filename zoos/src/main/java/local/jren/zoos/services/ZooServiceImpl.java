@@ -33,4 +33,13 @@ public class ZooServiceImpl implements ZooService{
     public Zoo findZooById(long id) {
         return zooRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Zoo "+id+" Not Found"));
     }
+
+    @Override
+    public void deleteZooById(long id) {
+        if(zooRepository.findById(id).isPresent()) {
+            zooRepository.deleteZooByZooid(id);
+        } else {
+            throw new EntityNotFoundException("Zoo "+id+" Not Found");
+        }
+    }
 }
