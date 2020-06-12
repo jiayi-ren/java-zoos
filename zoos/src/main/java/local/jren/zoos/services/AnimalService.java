@@ -8,4 +8,5 @@ import java.util.List;
 public interface AnimalService {
     List<Animal> findAll();
     List<AnimalCounts> getAnimalCounts();
+    Animal findAnimalById(long id);
 }

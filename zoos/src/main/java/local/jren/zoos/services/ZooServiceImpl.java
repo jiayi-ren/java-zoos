@@ -1,6 +1,9 @@
 package local.jren.zoos.services;
 
+import local.jren.zoos.models.Animal;
+import local.jren.zoos.models.Telephone;
 import local.jren.zoos.models.Zoo;
+import local.jren.zoos.models.ZooAnimals;
 import local.jren.zoos.repositories.ZooRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,70 @@ public class ZooServiceImpl implements ZooService{
             zooRepository.deleteZooByZooid(id);
         } else {
             throw new EntityNotFoundException("Zoo "+id+" Not Found");
+        }
+    }
+
+    @Transactional
+    @Override
+    public Zoo save(Zoo zoo) {
+        Zoo newZoo = new Zoo();
+
+        if(zoo.getZooid() != 0) {
+            Zoo oldZoo = zooRepository.findById(zoo.getZooid()).orElseThrow(()-> new EntityNotFoundException("Zoo "+zoo.getZooid()+" Not Found"));
+
+            for (ZooAnimals zooAnimal: oldZoo.getAnimals()) {
+                deleteZooAnimal(zooAnimal.getZoo().getZooid(), zooAnimal.getAnimal().getAnimalid());
+            }
+            newZoo.setZooid(zoo.getZooid());
+        }
+
+        newZoo.setZooname(zoo.getZooname());
+
+        newZoo.getTelephones().clear();
+        for (Telephone telephone: zoo.getTelephones()) {
+            Telephone newTelephone = new Telephone(telephone.getPhonetype(),telephone.getPhonenumber(),newZoo);
+            newZoo.getTelephones().add(newTelephone);
+        }
+
+        newZoo.getAnimals().clear();
+        if (zoo.getZooid() == 0 ) {
+            for (ZooAnimals zooAnimal: zoo.getAnimals()) {
+                Animal newAnimal = animalService.findAnimalById(zooAnimal.getAnimal().getAnimalid());
+
+                newZoo.addAnimal(newAnimal);
+            }
+        } else {
+            for (ZooAnimals zooAnimal: zoo.getAnimals()) {
+                addZooAnimal(newZoo.getZooid(),zooAnimal.getAnimal().getAnimalid());
+            }
+        }
+
+        return zooRepository.save(newZoo);
+    }
+
+    @Transactional
+    @Override
+    public void deleteZooAnimal(long zooid, long animalid) {
+        zooRepository.findById(zooid).orElseThrow(()-> new EntityNotFoundException("Zoo "+zooid+" Not Found"));
+        animalService.findAnimalById(animalid);
+
+        if (zooRepository.checkZooAnimalsCombo(zooid,animalid).getCount() > 0) {
+            zooRepository.deleteZooAnimals(zooid, animalid);
+        } else {
+           throw new EntityNotFoundException("Zoo and Animal Combination Doesn't Exist");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void addZooAnimal(long zooid, long animalid) {
+        zooRepository.findById(zooid).orElseThrow(()-> new EntityNotFoundException("Zoo "+zooid+" Not Found"));
+        animalService.findAnimalById(animalid);
+
+        if (zooRepository.checkZooAnimalsCombo(zooid,animalid).getCount() <= 0) {
+            zooRepository.insertZooAnimals(zooAuditing.getCurrentAuditor().get(), zooid, animalid);
+        } else {
+            throw new EntityNotFoundException("Zoo and Animal Combination Already Exists");
         }
     }
 }

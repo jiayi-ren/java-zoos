@@ -8,7 +8,7 @@ import java.util.Optional;
 @Component
 public class ZooAuditing implements AuditorAware<String> {
     @Override
-    public Optional getCurrentAuditor() {
+    public Optional<String> getCurrentAuditor() {
         String zname;
         zname = "SYSTEM";
         return Optional.of(zname);

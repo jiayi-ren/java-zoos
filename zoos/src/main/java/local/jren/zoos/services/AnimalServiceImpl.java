@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @Transactional
@@ -25,5 +26,10 @@ public class AnimalServiceImpl implements AnimalService{
     @Override
     public List<AnimalCounts> getAnimalCounts() {
         return animalRepository.getCountAnimal();
+    }
+
+    @Override
+    public Animal findAnimalById(long id) {
+        return animalRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Animal "+id+" Not Found"));
     }
 }
