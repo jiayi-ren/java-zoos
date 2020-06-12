@@ -21,6 +21,6 @@ public interface ZooRepository extends CrudRepository<Zoo, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "INSERT INTO zooanimals(zooid, animalid, created_by, created_date, last_modified_by, last_modified_date) VALUES (:zooid, :animalid, :zname, CURRENT_TIMESTAMP, :zname, CURRENT_TIMESTAMP);", nativeQuery = true)
+    @Query(value = "INSERT INTO zooanimals(zooid, animalid, createdby, createddate, lastmodifiedby, lastmodifieddate) VALUES (:zooid, :animalid, :zname, CURRENT_TIMESTAMP, :zname, CURRENT_TIMESTAMP);", nativeQuery = true)
     void insertZooAnimals(@Param("zname")String zname, @Param("zooid") long zooid, @Param("animalid") long animalid);
 }
